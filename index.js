@@ -17,12 +17,9 @@ import { tweetModel2 } from "./Models/User.js";
 import { tweetModel } from "./Models/User.js";
 app.use(cookieParser());
 app.use(express.urlencoded({ extended: false }));
-app.use(
-  cors({
-    origin: ["http://localhost:3000", "*"],
-    credentials: true,
-  })
-);
+app.use(cors())
+app.options('*', cors());
+
 const storage = multer.diskStorage({
   destination: "/tmp",
   filename: function (req, file, cb) {
