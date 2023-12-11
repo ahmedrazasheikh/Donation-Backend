@@ -16,7 +16,7 @@ amountRequired:  { type: String },
 collectedAmount:  { type: String }, 
 amountRemaining : { type: String }, 
 projectDescription:  { type: String }, 
-imageUrl: { type: String  ,  required: true },
+imageUrl: { type: Array  ,  required: true },
 createdOn: { type: Date, default: Date.now },
 });
 export const tweetModel = mongoose.model('ProductsAll', productSchema);
@@ -27,8 +27,10 @@ export const tweetModel = mongoose.model('ProductsAll', productSchema);
 
 const productSchema2 = new mongoose.Schema({
     projectName:{ type: String },
+    amountRequired:  { type: String },
+    collectedAmount:  { type: String },  
     projectDescription:  { type: String }, 
-    imageUrl: { type: String  ,  required: true },
+    imageUrl: { type: Array  ,  required: true },
     createdOn: { type: Date, default: Date.now },
     });
 export const tweetModel2 = mongoose.model('ProductsAll2', productSchema2);
