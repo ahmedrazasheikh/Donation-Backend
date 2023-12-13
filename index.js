@@ -146,6 +146,7 @@ app.post('/api/v1/updates/:id', upload.any(), async (req, res) => {
         let array = urls
         tweetModel.findByIdAndUpdate(id, {
           projectName: body.projectName,
+          projectCategory :    body.projectCategory,
           amountRequired: body.amountRequired,
           collectedAmount: body.collectedAmount,
           projectDescription: body.projectDescription,
@@ -217,6 +218,7 @@ app.post('/api/v1/updated/completed/:id', upload.any(), async (req, res) => {
         let array = urls
         tweetModel2.findByIdAndUpdate(id, {
           projectName: body.projectName,
+          projectCategory : body.projectCategory,
           amountRequired: body.amountRequired,
           collectedAmount: body.collectedAmount,
           projectDescription: body.projectDescription,
@@ -361,6 +363,7 @@ app.post("/api/v1/AddProduct", upload.any(), (req, res) => {
         let array = urls
         let addProduct = new tweetModel({
           projectName: body.projectName,
+          projectCategory :    body.projectCategory,
           amountRequired: body.amountRequired,
           collectedAmount: body.collectedAmount,
           projectDescription: body.projectDescription,
@@ -396,6 +399,7 @@ app.post("/api/v1/CompletedProject/:id", upload.any(), async (req, res) => {
     // Create a new instance of tweetModel2 with data from tweet
     let addProduct = new tweetModel2({
       projectName: tweet.projectName,
+      projectCategory :    tweet.projectCategory,
       amountRequired: tweet.amountRequired,
       collectedAmount: tweet.collectedAmount,
       projectDescription: tweet.projectDescription,
@@ -442,6 +446,7 @@ app.post("/api/v1/CompletedProject2/:id", upload.any(), async (req, res) => {
     // Create a new instance of tweetModel2 with data from tweet
     let addProduct = new tweetModel({
       projectName: tweet.projectName,
+      projectCategory : tweet.projectCategory,
       amountRequired: tweet.amountRequired,
       collectedAmount: tweet.collectedAmount,
       projectDescription: tweet.projectDescription,

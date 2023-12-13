@@ -12,6 +12,7 @@ const userSchema = new mongoose.Schema({
 
 const productSchema = new mongoose.Schema({
 projectName:{ type: String },
+projectCategory: { type: String },
 amountRequired:  { type: String },
 collectedAmount:  { type: String }, 
 amountRemaining : { type: String }, 
@@ -27,6 +28,7 @@ export const tweetModel = mongoose.model('ProductsAll', productSchema);
 
 const productSchema2 = new mongoose.Schema({
     projectName:{ type: String },
+    projectCategory: { type: String },
     amountRequired:  { type: String },
     collectedAmount:  { type: String },  
     projectDescription:  { type: String }, 
