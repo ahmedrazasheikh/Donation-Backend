@@ -13,9 +13,8 @@ const userSchema = new mongoose.Schema({
 const productSchema = new mongoose.Schema({
 projectName:{ type: String },
 projectCategory: { type: String },
-amountRequired:  { type: String },
+amountRequired:  { type: Number },
 collectedAmount:  { type: String }, 
-amountRemaining : { type: String }, 
 projectDescription:  { type: String }, 
 imageUrl: { type: Array  ,  required: true },
 createdOn: { type: Date, default: Date.now },
@@ -29,8 +28,8 @@ export const tweetModel = mongoose.model('ProductsAll', productSchema);
 const productSchema2 = new mongoose.Schema({
     projectName:{ type: String },
     projectCategory: { type: String },
-    amountRequired:  { type: String },
-    collectedAmount:  { type: String },  
+    amountRequired:  { type: Number },
+    collectedAmount:  { type: Number },  
     projectDescription:  { type: String }, 
     imageUrl: { type: Array  ,  required: true },
     createdOn: { type: Date, default: Date.now },
