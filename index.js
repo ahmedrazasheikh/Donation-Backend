@@ -1,5 +1,5 @@
 import express from "express";
-import User from "./Models/User.js"; // Adjust the path based on your directory structure
+// import User, { cities } from "./Models/User.js"; // Adjust the path based on your directory structure
 import bcrypt from "bcrypt";
 import crypto from "crypto"; // Import the 'crypto' module
 import jwt from "jsonwebtoken"; // Import the jsonwebtoken library
@@ -13,12 +13,13 @@ import multer from "multer";
 import bucket from "./Bucket/Firebase.js";
 import fs from "fs";
 import path from "path";
-import { tweetModel2 } from "./Models/User.js";
+import { citiesModel, tweetModel2 } from "./Models/User.js";
 import { tweetModel } from "./Models/User.js";
+
 app.use(cookieParser());
 app.use(express.urlencoded({ extended: false }));
-app.use(cors())
-app.options('*', cors());
+app.use(cors());
+app.options("*", cors());
 
 const storage = multer.diskStorage({
   destination: "/tmp",
@@ -81,6 +82,46 @@ app.get("/api/v1/products2", async (req, res) => {
     });
   }
 });
+
+// Update the route to /api/v1/cities
+app.post("/api/v1/cities/add", async (req, res) => {
+  try {
+  
+    const city = req.body.name;
+    if (!city) {
+      return res.status(400).json({ error: "City name is required" });
+    }
+
+    // Find the document and push the new city to the cities array
+    const result = await citiesModel.findOneAndUpdate(
+      { _id:"6580a7e06808837148d891c1" },
+      { $push: { cities: city } },
+      { new: true, upsert: true }
+    );
+
+    res.status(201).json(result);
+  } catch (error) {
+    console.error(error);
+    res.status(500).json({ error: "Internal Server Error" });
+  }
+});
+
+app.get("/api/v1/cities/get", async (req, res) => {
+  try {
+    const city = await citiesModel.findById("6580a7e06808837148d891c1");
+
+    if (!city) {
+      // If the city with the given _id is not found, return a 404 status
+      return res.status(404).json({ error: "City not found" });
+    }
+
+    res.json(city);
+  } catch (error) {
+    // Handle other errors, such as database errors
+    res.status(500).json({ error: error.message });
+  }
+});
+
 app.get("/api/v1/products", async (req, res) => {
   try {
     const result = await tweetModel.find().exec(); // Using .exec() to execute the query
@@ -96,7 +137,7 @@ app.get("/api/v1/products", async (req, res) => {
     });
   }
 });
-app.post('/api/v1/updates/:id', upload.any(), async (req, res) => {
+app.post("/api/v1/updates/:id", upload.any(), async (req, res) => {
   try {
     const body = req.body;
     const id = req.params.id;
@@ -141,34 +182,35 @@ app.post('/api/v1/updates/:id', upload.any(), async (req, res) => {
       });
     });
 
-    Promise.all(uploadedFiles)
-      .then((urls) => {
-        let array = urls
-        tweetModel.findByIdAndUpdate(id, {
-          projectName: body.projectName,
-          projectCategory :    body.projectCategory,
-          amountRequired: body.amountRequired,
-          collectedAmount: body.collectedAmount,
-          projectDescription: body.projectDescription,
-          imageUrl: array,
-        }, { new: true })
-          .then(updatedProduct => {
-            console.log("Product Updated successfully", updatedProduct);
-            res.status(200).send();
-          })
-          .catch(error => {
-            console.error("Error updating product:", error);
-            res.status(500).send();
-          });
+    Promise.all(uploadedFiles).then((urls) => {
+      let array = urls;
+      tweetModel
+        .findByIdAndUpdate(
+          id,
+          {
+            projectName: body.projectName,
+            projectCategory: body.projectCategory,
+            amountRequired: body.amountRequired,
+            projectDescription: body.projectDescription,
+            imageUrl: array,
+          },
+          { new: true }
+        )
+        .then((updatedProduct) => {
+          console.log("Product Updated successfully", updatedProduct);
+          res.status(200).send();
         })
+        .catch((error) => {
+          console.error("Error updating product:", error);
+          res.status(500).send();
+        });
+    });
   } catch (error) {
     console.log("error: ", error);
     res.status(500).send();
-  }  
-
-
+  }
 });
-app.post('/api/v1/updated/completed/:id', upload.any(), async (req, res) => {
+app.post("/api/v1/updated/completed/:id", upload.any(), async (req, res) => {
   try {
     const body = req.body;
     const id = req.params.id;
@@ -213,32 +255,33 @@ app.post('/api/v1/updated/completed/:id', upload.any(), async (req, res) => {
       });
     });
 
-    Promise.all(uploadedFiles)
-      .then((urls) => {
-        let array = urls
-        tweetModel2.findByIdAndUpdate(id, {
-          projectName: body.projectName,
-          projectCategory : body.projectCategory,
-          amountRequired: body.amountRequired,
-          collectedAmount: body.collectedAmount,
-          projectDescription: body.projectDescription,
-          imageUrl: array,
-        }, { new: true })
-          .then(updatedProduct => {
-            console.log("Product Updated successfully", updatedProduct);
-            res.status(200).send();
-          })
-          .catch(error => {
-            console.error("Error updating product:", error);
-            res.status(500).send();
-          });
+    Promise.all(uploadedFiles).then((urls) => {
+      let array = urls;
+      tweetModel2
+        .findByIdAndUpdate(
+          id,
+          {
+            projectName: body.projectName,
+            projectCategory: body.projectCategory,
+            amountRequired: body.amountRequired,
+            projectDescription: body.projectDescription,
+            imageUrl: array,
+          },
+          { new: true }
+        )
+        .then((updatedProduct) => {
+          console.log("Product Updated successfully", updatedProduct);
+          res.status(200).send();
         })
+        .catch((error) => {
+          console.error("Error updating product:", error);
+          res.status(500).send();
+        });
+    });
   } catch (error) {
     console.log("error: ", error);
     res.status(500).send();
-  }  
-
-
+  }
 });
 app.get("/api/v1/AllUser", async (req, res) => {
   try {
@@ -317,6 +360,10 @@ app.delete("/api/v1/customer2/:id", async (req, res) => {
 app.post("/api/v1/AddProduct", upload.any(), (req, res) => {
   try {
     const body = req.body;
+console.log(body.projectName)
+    console.log()
+  
+
     console.log("req.body: ", req.body);
     console.log("req.files: ", req.files);
 
@@ -360,17 +407,17 @@ app.post("/api/v1/AddProduct", upload.any(), (req, res) => {
 
     Promise.all(uploadedFiles)
       .then((urls) => {
-        let array = urls
+        let array = urls;
         let addProduct = new tweetModel({
           projectName: body.projectName,
-          projectCategory :    body.projectCategory,
+          projectVillage : body.ProjectVillage,
+          projectCategory: body.projectCategory,
           amountRequired: body.amountRequired,
-          collectedAmount: body.collectedAmount,
           projectDescription: body.projectDescription,
           imageUrl: array,
         });
 
-        return addProduct.save();
+        return addProduct.save(); 
       })
       .then(() => {
         console.log("Product added successfully");
@@ -393,17 +440,19 @@ app.post("/api/v1/CompletedProject/:id", upload.any(), async (req, res) => {
     const tweet = await tweetModel.findById(id);
 
     if (!tweet) {
-      return res.status(404).json({ error: 'Tweet not found' });
+      return res.status(404).json({ error: "Tweet not found" });
     }
 
     // Create a new instance of tweetModel2 with data from tweet
     let addProduct = new tweetModel2({
       projectName: tweet.projectName,
-      projectCategory :    tweet.projectCategory,
+      projectVillage : tweet.projectVillage,
+      projectCategory: tweet.projectCategory,
       amountRequired: tweet.amountRequired,
       collectedAmount: tweet.collectedAmount,
       projectDescription: tweet.projectDescription,
       imageUrl: tweet.imageUrl,
+      paymentDetail : tweet.paymentDetail
     });
 
     // Save the new instance to the database
@@ -424,12 +473,12 @@ app.post("/api/v1/CompletedProject/:id", upload.any(), async (req, res) => {
         }
       } catch (deleteError) {
         console.error("Error deleting product:", deleteError);
-        res.status(500).json({ error: 'Error deleting product' });
+        res.status(500).json({ error: "Error deleting product" });
       }
     });
   } catch (error) {
     console.error(error);
-    res.status(500).json({ error: 'Internal Server Error' });
+    res.status(500).json({ error: "Internal Server Error" });
   }
 });
 app.post("/api/v1/CompletedProject2/:id", upload.any(), async (req, res) => {
@@ -440,17 +489,19 @@ app.post("/api/v1/CompletedProject2/:id", upload.any(), async (req, res) => {
     const tweet = await tweetModel2.findById(id);
 
     if (!tweet) {
-      return res.status(404).json({ error: 'Tweet not found' });
+      return res.status(404).json({ error: "Tweet not found" });
     }
 
     // Create a new instance of tweetModel2 with data from tweet
     let addProduct = new tweetModel({
       projectName: tweet.projectName,
-      projectCategory : tweet.projectCategory,
+      projectVillage : tweet.projectVillage,
+      projectCategory: tweet.projectCategory,
       amountRequired: tweet.amountRequired,
       collectedAmount: tweet.collectedAmount,
       projectDescription: tweet.projectDescription,
       imageUrl: tweet.imageUrl,
+      paymentDetail : tweet.paymentDetail
     });
 
     // Save the new instance to the database
@@ -471,14 +522,118 @@ app.post("/api/v1/CompletedProject2/:id", upload.any(), async (req, res) => {
         }
       } catch (deleteError) {
         console.error("Error deleting product:", deleteError);
-        res.status(500).json({ error: 'Error deleting product' });
+        res.status(500).json({ error: "Error deleting product" });
       }
     });
   } catch (error) {
     console.error(error);
-    res.status(500).json({ error: 'Internal Server Error' });
+    res.status(500).json({ error: "Internal Server Error" });
   }
 });
+app.put('/api/v1/paymentDetail/:id', async (req, res) => {
+console.log(req.params.id)
+
+const id = req.params.id;
+console.log(req.body.paymentDetail)
+try {
+  // Assuming tweetModel has a method like findById to find a document by its ID
+  const tweet = await tweetModel.findById(id);
+
+  if (!tweet) {
+    return res.status(404).json({ error: "Tweet not found" });
+  }
+
+  // Create a new instance of tweetModel2 with data from tweet
+  let addProduct = new tweetModel({
+    projectName: tweet.projectName,
+    projectVillage : tweet.projectVillage,
+    projectCategory: tweet.projectCategory,
+    amountRequired: tweet.amountRequired,
+    projectDescription: tweet.projectDescription,
+    imageUrl: tweet.imageUrl,
+    paymentDetail : req.body.paymentDetail
+  });
+
+  // Save the new instance to the database
+  addProduct.save().then(async (savedProduct) => {
+    console.log(savedProduct, "Product added");
+
+    try {
+      const deletedData = await tweetModel.deleteOne({ _id: id });
+
+      if (deletedData.deletedCount !== 0) {
+        res.status(200).json({
+          message: "Product has been deleted successfully",
+        });
+      } else {
+        res.status(404).json({
+          message: "No Product found with this id: " + id,
+        });
+      }
+    } catch (deleteError) {
+      console.error("Error deleting product:", deleteError);
+      res.status(500).json({ error: "Error deleting product" });
+    }
+  });
+} catch (error) {
+  console.error(error);
+  res.status(500).json({ error: "Internal Server Error" });
+}
+});
+
+// Update Api 
+
+app.put('/api/v1/paymentUpdate/:id', async (req, res) => {
+  const id = req.params.id;
+
+  try {
+    const updatedData = await tweetModel.updateOne(
+      { _id: id },
+      { $set: { paymentDetail: req.body.paymentDetail } }
+    );
+
+    if (updatedData.nModified !== 0) {
+      res.status(200).json({
+        message: "Payment detail updated successfully",
+      });
+    } else {
+      res.status(404).json({
+        message: "No document found with this id: " + id,
+      });
+    }
+  } catch (error) {
+    console.error("Error updating payment detail:", error);
+    res.status(500).json({ error: "Error updating payment detail" });
+  }
+});
+
+app.put('/api/v1/paymentUpdate/Acheived/:id', async (req, res) => {
+  const id = req.params.id;
+
+  try {
+    const updatedData = await tweetModel2.updateOne(
+      { _id: id },
+      { $set: { paymentDetail: req.body.paymentDetail } }
+    );
+
+    if (updatedData.nModified !== 0) {
+      res.status(200).json({
+        message: "Payment detail updated successfully",
+      });
+    } else {
+      res.status(404).json({
+        message: "No document found with this id: " + id,
+      });
+    }
+  } catch (error) {
+    console.error("Error updating payment detail:", error);
+    res.status(500).json({ error: "Error updating payment detail" });
+  }
+});
+
+
+
+
 // app.post("/signup", async (req, res) => {
 //   try {
 //     const { username, email, password } = req.body;
